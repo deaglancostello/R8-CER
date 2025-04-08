@@ -12,7 +12,7 @@ function player_init()
         max_speed = 10,
         acc = 0.8,
         da = 0, --change in angle, how hard the car is turning
-        max_da = 5,
+        max_da = 10,
         da_acc = 0.3,
         sp = 1,
         angle_in_deg = 0,
@@ -34,6 +34,9 @@ function player_update()
     if btn(➡️) then
         player.da += player.da_acc
     end
+    if not btn(➡️) and not btn(⬅️) then
+        player.da = 0 
+    end
     if btn(⬆️) then
         player.in_rev = false
         player.speed += player.acc
@@ -52,19 +55,35 @@ function player_update()
         player.angle_in_deg += 360 --make sure the angle_in_deg is always between 0-360
     end
 
-    if player.angle_in_deg > 45 and player.angle_in_deg < 135 then
-        player.sp = 1
-        player.flp_y = true
+    if player.angle_in_deg > 22.5 and player.angle_in_deg < 67.5 then
+        player.sp = 3
+        player.flp_y = false
+        player.flp_x = true
+    elseif player.angle_in_deg < 112.5 and player.angle_in_deg > 67.5 then
+        player.sp = 3
+        player.flp_y = false
         player.flp_x = false
-    elseif player.angle_in_deg < 225 and player.angle_in_deg > 135 then
+    elseif player.angle_in_deg < 202.5 and player.angle_in_deg > 112.5 then
         player.sp = 2
         player.flp_x = false
         player.flp_y = false
-    elseif player.angle_in_deg > 225 and player.angle_in_deg < 360 then
+    elseif player.angle_in_deg > 202.5 and player.angle_in_deg < 247.5 then
+        player.sp = 3
+        player.flp_x = false
+        player.flp_y = true
+    elseif player.angle_in_deg > 247.5 and player.angle_in_deg < 360 then
         player.sp = 1
         player.flp_x = false
         player.flp_y = false
-    elseif player.angle_in_deg > 0 and player.angle_in_deg < 45 then
+    elseif player.angle_in_deg > 247.5 and player.angle_in_deg < 337.5 then
+        player.sp = 3
+        player.flp_x = false
+        player.flp_y = true
+    elseif player.angle_in_deg > 337.5 and player.angle_in_deg < 360 then
+        player.sp = 2
+        player.flp_x = true
+        player.flp_y = false
+    elseif player.angle_in_deg > 0 and player.angle_in_deg < 22.5 then
         player.sp = 2
         player.flp_x = true
         player.flp_y = false
