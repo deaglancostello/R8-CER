@@ -64,7 +64,7 @@ function player_update()
     end
     if player.speed > 0 then
         if btn(⬅️) then
-            friction = 0.4
+            friction = 0.5
             if player.da > 0 then
                 player.da = 0
             end
