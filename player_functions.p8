@@ -43,14 +43,13 @@ function player_update()
         player.fin_time = time()-player.start
         player.start = player.fin_time
     end
-    if (collide_map(player, "down", 2) or collide_map(player, "right", 2) or collide_map(player, "left", 2) or collide_map(player, "up", 2)) and player.start > 0 and time()-player.cp_cd > 5 then
+    if (collide_map(player, "down", 2) or collide_map(player, "right", 2) or collide_map(player, "left", 2) or collide_map(player, "up", 2)) and player.start > 0 and time()-player.cp_cd > 3.5 then
         player.checkpoints += 1
         player.cp_cd = time()
     end
     if (collide_map(player, "down", 3) or collide_map(player, "right", 3) or collide_map(player, "left", 3) or collide_map(player, "up", 3)) then
-        player.speed = 0
-        old_speed = 0
-        player.max_speed = 5
+        --booster
+        player.speed = player.max_speed-3
     else
         player.max_speed = 10
     end
@@ -58,7 +57,11 @@ function player_update()
         player.checkpoints = max_checkpoints
     end
     --⬇️ ⬆️ ⬅️ ➡️
-    player.speed *= friction
+    if player.speed < 3 then
+        player.speed *= friction
+    else
+        player.speed -= 1
+    end
     if player.speed < 0.1 then
         player.speed = 0
     end
@@ -68,19 +71,20 @@ function player_update()
             if player.da > 0 then
                 player.da = 0
             end
-            player.da -= player.da_acc/4
+            player.da -= player.da_acc/2
         end
         if btn(➡️) then
             friction = 0.4
             if player.da < 0 then
                 player.da = 0
             end
-            player.da += player.da_acc
+            player.da += player.da_acc/2
         end
     end
     if not btn(➡️) and not btn(⬅️) then
         player.da = 0
         friction = 0.8
+        player.max_da = 10
     end
     if btn(⬆️) then
         player.slowing_down = false
