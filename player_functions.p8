@@ -276,15 +276,15 @@ function player_draw()
     cls()
     map(0,0)
     camera(cam_x, cam_y)
-    line(player.x+4, player.y+4, player.x + 4 + player.dx * 15, player.y + 4 + player.dy * 15, 8)
+    line(player.x+4, player.y+4, player.x + 4 + player.dx * 10, player.y + 4 + player.dy * 10, 1)
     spr(player.sp, player.x, player.y, 1, 1, player.flp_x, player.flp_y)
     if not player.fin then
-        print(str, cam_x + 64 - #str+1 , cam_y + 8, 8)
+        print(str, cam_x + 64 - #str+1 , cam_y + 8, 1)
     else
-        print(str4, cam_x + 63 - #str3, cam_y + 8, 8)
+        print(str4, cam_x + 63 - #str3, cam_y + 8, 1)
     end
-    print(str2, cam_x + 63 - #str2, cam_y + 16, 9)
-    print(str3, cam_x + 64 - #str3, cam_y + 24, 10)
+    print(str2, cam_x + 63 - #str2, cam_y + 16, 13)
+    print(str3, cam_x + 64 - #str3, cam_y + 24, 12)
 end
 
 __gfx__
