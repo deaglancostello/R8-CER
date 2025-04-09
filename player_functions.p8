@@ -3,8 +3,9 @@ version 42
 __lua__
 
 function player_init()
+    levels = {"race1.p8","race2.p8","mainmenu.p8"}
     player = {
-        x = 80,
+        x = 84,
         y = 84,
         dx = 0,
         dy = 0,
@@ -21,6 +22,7 @@ function player_init()
         start = 0,
         fin_time = 0,
         cp_cd = 0,
+        max_cpcd = 3,
         checkpoints = 0,
         in_rev = false,
         on_grass = false,
@@ -43,7 +45,7 @@ function player_update()
         player.fin_time = time()-player.start
         player.start = player.fin_time
     end
-    if (collide_map(player, "down", 2) or collide_map(player, "right", 2) or collide_map(player, "left", 2) or collide_map(player, "up", 2)) and player.start > 0 and time()-player.cp_cd > 3.5 then
+    if (collide_map(player, "down", 2) or collide_map(player, "right", 2) or collide_map(player, "left", 2) or collide_map(player, "up", 2)) and player.start > 0 and time()-player.cp_cd > player.max_cpcd then
         player.checkpoints += 1
         player.cp_cd = time()
     end
@@ -57,93 +59,110 @@ function player_update()
         player.checkpoints = max_checkpoints
     end
     --⬇️ ⬆️ ⬅️ ➡️
-    if player.speed < 3 then
-        player.speed *= friction
-    else
-        player.speed -= 1
-    end
-    if player.speed < 0.1 then
-        player.speed = 0
-    end
-    if player.speed > 0 then
-        if btn(⬅️) then
-            friction = 0.5
-            if player.da > 0 then
-                player.da = 0
+    if not player.fin then
+        if player.speed < 3 then
+            player.speed *= friction
+        else
+            player.speed -= 1
+        end
+        if player.speed < 0.1 then
+            player.speed = 0
+        end
+        if player.speed > 0 or player.speed < 0 then
+            if btn(⬅️) then
+                friction = 0.5
+                if player.da > 0 then
+                    player.da = 0
+                end
+                player.da -= player.da_acc/2
             end
-            player.da -= player.da_acc/2
-        end
-        if btn(➡️) then
-            friction = 0.4
-            if player.da < 0 then
-                player.da = 0
+            if btn(➡️) then
+                friction = 0.5
+                if player.da < 0 then
+                    player.da = 0
+                end
+                player.da += player.da_acc/2
             end
-            player.da += player.da_acc/2
         end
-    end
-    if not btn(➡️) and not btn(⬅️) then
-        player.da = 0
-        friction = 0.8
-        player.max_da = 10
-    end
-    if btn(⬆️) then
-        player.slowing_down = false
-        player.in_rev = false
-        player.speed += player.acc
-        old_speed = player.speed
-    end
-    if btn(⬇️) then
-        player.slowing_down = false
-        old_speed = player.speed
-        if player.speed > 0 then
-            player.speed -= player.acc/10
+        if not btn(➡️) and not btn(⬅️) then
+            player.da = 0
+            friction = 0.8
+            player.max_da = 10
+        end
+        if btn(⬆️) then
+            player.slowing_down = false
+            player.in_rev = false
+            player.speed += player.acc
+            old_speed = player.speed
+        end
+        if btn(⬇️) then
+            player.slowing_down = false
+            old_speed = player.speed
+            if player.speed > 0 then
+                player.speed -= player.acc/10
+            else
+                player.in_rev = true
+                player.speed -= player.acc
+            end
+        end
+        if not btn(⬇️) and not btn(⬆️) and player.speed > 0 then
+            player.slowing_down = true
+            player.speed = old_speed
+            old_speed -= 0.1
+        end
+        
+        player.da = mid(-player.max_da, player.da, player.max_da)
+        player.angle_in_deg += player.da
+
+        if player.angle_in_deg > 360 then
+            player.angle_in_deg -= 360 --make sure the angle_in_deg is always between 0-360
+        end
+        if player.angle_in_deg < 0 then
+            player.angle_in_deg += 360 --make sure the angle_in_deg is always between 0-360
+        end
+
+        player_animate()
+
+        local p_angle = player.angle_in_deg/360
+        if collide_map(player, "down", 0) or collide_map(player, "right", 0) or collide_map(player, "left", 0) or collide_map(player, "up", 0) then
+            player.on_grass = true
         else
-            player.in_rev = true
-            player.speed -= player.acc
+            player.on_grass = false
         end
-    end
-    if not btn(⬇️) and not btn(⬆️) and player.speed > 0 then
-        player.slowing_down = true
-        player.speed = old_speed
-        old_speed -= 0.1
-    end
-    
-    player.da = mid(-player.max_da, player.da, player.max_da)
-    player.angle_in_deg += player.da
-
-    if player.angle_in_deg > 360 then
-        player.angle_in_deg -= 360 --make sure the angle_in_deg is always between 0-360
-    end
-    if player.angle_in_deg < 0 then
-        player.angle_in_deg += 360 --make sure the angle_in_deg is always between 0-360
-    end
-
-    player_animate()
-
-    local p_angle = player.angle_in_deg/360
-    if collide_map(player, "down", 0) or collide_map(player, "right", 0) or collide_map(player, "left", 0) or collide_map(player, "up", 0) then
-        player.on_grass = true
+        if not player.in_rev and not player.slowing_down then
+            if not player.on_grass then
+                player.speed = mid(-player.max_speed, player.speed, player.max_speed)
+            else
+                player.speed = mid(-player.max_speed*g_friction, player.speed, player.max_speed*g_friction)
+            end
+        elseif not player.slowing_down then
+            if not player.on_grass then
+                player.speed = mid(-player.max_speed/2, player.speed, player.max_speed/2)
+            else
+                player.speed = mid((-player.max_speed/2)*g_friction, player.speed, (player.max_speed/2)*g_friction)
+            end
+        end
+        player.dy = -sin(p_angle) * player.speed --calculates the change in x based on the speed and angle the player is at
+        player.dx = cos(p_angle) * player.speed --calculates the change in y based on the speed and angle the player is at
+        player.x += player.dx
+        player.y += player.dy
+        cam_update()
     else
-        player.on_grass = false
-    end
-    if not player.in_rev and not player.slowing_down then
-        if not player.on_grass then
-            player.speed = mid(-player.max_speed, player.speed, player.max_speed)
-        else
-            player.speed = mid(-player.max_speed*g_friction, player.speed, player.max_speed*g_friction)
+        if btn(🅾️) then
+            local j = 1
+            for i = 1,dget(1) do
+                j = i
+            end
+            load(levels[j])
         end
-    elseif not player.slowing_down then
-        if not player.on_grass then
-            player.speed = mid(-player.max_speed/2, player.speed, player.max_speed/2)
-        else
-            player.speed = mid((-player.max_speed/2)*g_friction, player.speed, (player.max_speed/2)*g_friction)
+        if btn(❎) then
+            local j = 1
+            for i = 1,dget(1)+1 do
+                j = i
+            end
+            load(levels[j])
         end
     end
-    player.dy = -sin(p_angle) * player.speed --calculates the change in x based on the speed and angle the player is at
-    player.dx = cos(p_angle) * player.speed --calculates the change in y based on the speed and angle the player is at
-    player.x += player.dx
-    player.y += player.dy
-    cam_update()
 end
 
 function collide_map(object, aim, flag)
@@ -273,18 +292,22 @@ function player_draw()
     local str2 = "cp/total: "..player.checkpoints.."/"..max_checkpoints
     local str3 = "speed: "..flr(player.speed*100)..""
     local str4 = "time: "..player.fin_time
+    local restart = "press 🅾️/z to restart"
+    local next_level = "press ❎/x to go to next track"
     cls()
     map(0,0)
     camera(cam_x, cam_y)
     line(player.x+4, player.y+4, player.x + 4 + player.dx * 10, player.y + 4 + player.dy * 10, 1)
     spr(player.sp, player.x, player.y, 1, 1, player.flp_x, player.flp_y)
     if not player.fin then
-        print(str, cam_x + 64 - #str+1 , cam_y + 8, 1)
+        print(str, cam_x + 64 - #str*2 , cam_y + 8, 1)
     else
-        print(str4, cam_x + 63 - #str3, cam_y + 8, 1)
+        print(str4, cam_x + 63 - #str3*2, cam_y + 8, 1)
+        print(restart, cam_x + 63 - #restart*2, cam_y + 114, 12)
+        print(next_level, cam_x + 63 - #next_level*2, cam_y + 122, 12)
     end
-    print(str2, cam_x + 63 - #str2, cam_y + 16, 13)
-    print(str3, cam_x + 64 - #str3, cam_y + 24, 12)
+    print(str2, cam_x + 63 - #str2*2, cam_y + 16, 13)
+    print(str3, cam_x + 64 - #str3*2, cam_y + 24, 12)
 end
 
 __gfx__
