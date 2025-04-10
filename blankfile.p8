@@ -5,10 +5,18 @@ __lua__
 function _init()
     #include player_functions.p8
     cartdata("r8cer_costello")
+    menuitem(1, "save", function() save() end)
+    menuitem(2, "load", function() load_save() end)
+    menuitem(3, "main menu",function() load("mainmenu.p8") end)
+    menuitem(4, "reset save data", function() reset_save() end)
     if dget(1) != level then
         dset(1, level)
     end
     player_init()
+    if dget(2) == 1 then
+        dset(2, 0)
+        load_save()
+    end
     max_checkpoints = 4
     time_to_beat = 30
 end
@@ -19,6 +27,7 @@ end
 
 function _draw()
     player_draw()
+    pal(2, 130, 1)
 end
 
 __gfx__

@@ -300,14 +300,46 @@ function player_draw()
     line(player.x+4, player.y+4, player.x + 4 + player.dx * 10, player.y + 4 + player.dy * 10, 1)
     spr(player.sp, player.x, player.y, 1, 1, player.flp_x, player.flp_y)
     if not player.fin then
-        print(str, cam_x + 64 - #str*2 , cam_y + 8, 1)
+        print(str, cam_x + 64 - #str*2 , cam_y + 8, 7)
     else
-        print(str4, cam_x + 63 - #str3*2, cam_y + 8, 1)
+        print(str4, cam_x + 63 - #str3*2, cam_y + 8, 7)
         print(restart, cam_x + 63 - #restart*2, cam_y + 114, 12)
         print(next_level, cam_x + 63 - #next_level*2, cam_y + 122, 12)
     end
-    print(str2, cam_x + 63 - #str2*2, cam_y + 16, 13)
+    print(str2, cam_x + 63 - #str2*2, cam_y + 16, 6)
     print(str3, cam_x + 64 - #str3*2, cam_y + 24, 12)
+end
+
+function save()
+    dset(2, 1)--whether to load from a save or not
+    dset(3, player.x)
+    dset(4, player.y)
+    dset(5, player.angle_in_deg)
+    dset(6, player.speed)
+    dset(7, old_speed)
+    dset(8, player.start)
+    dset(9, player.sp)
+end
+
+function load_save()
+    player.x = dget(3)
+    player.y = dget(4)
+    player.angle_in_deg = dget(5)
+    player.speed = dget(6)
+    old_speed = dget(7)
+    player.start = dget(8)
+    player.sp = dget(9)
+end
+
+function reset_save()
+    dset(2, 0)
+    dset(3, 84)--player.x
+    dset(4, 84)--player.y
+    dset(5, 180)--player.angle_in_deg
+    dset(6, 0)--player.speed
+    dset(7, 0)--old_speed
+    dset(8, 0)--player.start
+    dset(9, 2)--player.sp
 end
 
 __gfx__
