@@ -3,7 +3,7 @@ version 42
 __lua__
 
 function player_init()
-    levels = {"race1.p8","race2.p8","mainmenu.p8"}
+    levels = {"race1.p8","race2.p8","race3.p8","mainmenu.p8"}
     player = {
         x = 84,
         y = 84,
@@ -29,7 +29,8 @@ function player_init()
         flp_x = false,
         flp_y = false,
         slowing_down = false,
-        fin = false
+        fin = false,
+        in_air = false
     }
     friction = 0.8
     g_friction = 0.1
@@ -38,6 +39,7 @@ end
 
 function player_update()
     local on_fin = (collide_map(player, "down", 1) or collide_map(player, "right", 1) or collide_map(player, "left", 1) or collide_map(player, "up", 1))
+    local on_grass = collide_map(player, "down", 0) or collide_map(player, "right", 0) or collide_map(player, "left", 0) or collide_map(player, "up", 0)
     if on_fin and player.start == 0 and not player.fin then
         player.start = time()
     elseif player.checkpoints == max_checkpoints and not player.fin and on_fin then
@@ -55,6 +57,15 @@ function player_update()
     else
         player.max_speed = 10
     end
+    if (collide_map(player, "down", 4) or collide_map(player, "right", 4) or collide_map(player, "left", 4) or collide_map(player, "up", 4)) then
+        player.in_air = true
+        old_speed = player.speed
+    elseif (collide_map(player, "down", 4) or collide_map(player, "right", 4) or collide_map(player, "left", 4) or collide_map(player, "up", 4)) and on_grass then
+        player.speed = old_speed
+    else
+        player.in_air = false
+    end
+
     if player.checkpoints > max_checkpoints then
         player.checkpoints = max_checkpoints
     end
@@ -68,7 +79,7 @@ function player_update()
         if player.speed < 0.1 then
             player.speed = 0
         end
-        if player.speed > 0 or player.speed < 0 then
+        if (player.speed > 0 or player.speed < 0) and not player.in_air then
             if btn(⬅️) then
                 friction = 0.5
                 if player.da > 0 then
@@ -124,7 +135,7 @@ function player_update()
         player_animate()
 
         local p_angle = player.angle_in_deg/360
-        if collide_map(player, "down", 0) or collide_map(player, "right", 0) or collide_map(player, "left", 0) or collide_map(player, "up", 0) then
+        if on_grass and not player.in_air then
             player.on_grass = true
         else
             player.on_grass = false
@@ -294,6 +305,8 @@ function player_draw()
     local str4 = "time: "..player.fin_time
     local restart = "press 🅾️/z to restart"
     local next_level = "press ❎/x to go to next track"
+    local in_air = "airborne!"
+    local speed_up = "boost!"
     cls()
     map(0,0)
     camera(cam_x, cam_y)
@@ -302,11 +315,17 @@ function player_draw()
     if not player.fin then
         print(str, cam_x + 64 - #str*2 , cam_y + 8, 7)
     else
-        print(str4, cam_x + 63 - #str3*2, cam_y + 8, 7)
-        print(restart, cam_x + 63 - #restart*2, cam_y + 114, 12)
-        print(next_level, cam_x + 63 - #next_level*2, cam_y + 122, 12)
+        print(str4, cam_x + 64 - #str3*2, cam_y + 8, 7)
+        print(restart, cam_x + 64 - #restart*2, cam_y + 114, 12)
+        print(next_level, cam_x + 64 - #next_level*2, cam_y + 122, 12)
     end
-    print(str2, cam_x + 63 - #str2*2, cam_y + 16, 6)
+    if player.speed > 3 then
+        print(speed_up, cam_x + 64 - #speed_up*2, cam_y + 40, 7)
+    end
+    if player.in_air then
+        print(in_air, cam_x + 64 - #in_air*2, cam_y + 32, 7)
+    end
+    print(str2, cam_x + 64 - #str2*2, cam_y + 16, 6)
     print(str3, cam_x + 64 - #str3*2, cam_y + 24, 12)
 end
 

@@ -43,7 +43,7 @@ function _draw()
 end
 
 function choose_button()
-    local levels = {"race1.p8","race2.p8","mainmenu.p8"}
+    local levels = {"race1.p8","race2.p8","race3.p8","mainmenu.p8"}
     local mouse_x = stat(32)
     local mouse_y = stat(33)
     if btn_map_x < 72 then
