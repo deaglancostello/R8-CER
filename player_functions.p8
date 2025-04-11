@@ -3,7 +3,7 @@ version 42
 __lua__
 
 function player_init()
-    levels = {"race1.p8","race2.p8","race3.p8","mainmenu.p8"}
+    levels = {"race1.p8","race2.p8","race3.p8", "race4.p8", "race5.p8", "race6.p8", "race7.p8", "race8.p8", "race9.p8", "race10.p8", "race11.p8", "race12.p8","race13.p8","mainmenu.p8"}
     player = {
         x = 84,
         y = 84,

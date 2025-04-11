@@ -9,8 +9,8 @@ function _init()
     menuitem(2, "load", function() load_save() end)
     menuitem(3, "main menu",function() load("mainmenu.p8") end)
     menuitem(4, "reset save data", function() reset_save() end)
-    if dget(1) != level then
-        dset(1, level)
+    if dget(1) != 7 then
+        dset(1, 7)
     end
     player_init()
     if dget(2) == 1 then
