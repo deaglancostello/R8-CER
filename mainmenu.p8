@@ -2,6 +2,8 @@ pico-8 cartridge // http://www.pico-8.com
 version 42
 __lua__
 
+--export -i 6 r8-cer.bin mainmenu.p8 player_functions.p8 race1.p8 race2.p8 race3.p8 race4.p8 race5.p8 race6.p8 race7.p8 race8.p8 race9.p8 race10.p8 race11.p8 race12.p8 race13.p8
+
 function _init()
     #include player_functions.p8
     poke(0x5F2D, 1)
@@ -18,7 +20,7 @@ function _init()
     draw_nums = false
     nums_spr = 64
     min_nums_spr = 64
-    max_nums_spr = 77
+    max_nums_spr = 76
 end
 
 function _update()
@@ -43,7 +45,7 @@ function _draw()
 end
 
 function choose_button()
-    local levels = {"race1.p8","race2.p8","race3.p8","mainmenu.p8"}
+    local levels = {"race1.p8","race2.p8","race3.p8", "race4.p8", "race5.p8", "race6.p8", "race7.p8", "race8.p8", "race9.p8", "race10.p8", "race11.p8", "race12.p8","race13.p8","mainmenu.p8"}
     local mouse_x = stat(32)
     local mouse_y = stat(33)
     if btn_map_x < 72 then
