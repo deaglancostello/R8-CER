@@ -60,6 +60,9 @@ function player_update()
     if (collide_map(player, "down", 4) or collide_map(player, "right", 4) or collide_map(player, "left", 4) or collide_map(player, "up", 4)) then
         player.in_air = true
         old_speed = player.speed
+        if player.da != 0 then
+            player.da = 0
+        end
     elseif (collide_map(player, "down", 4) or collide_map(player, "right", 4) or collide_map(player, "left", 4) or collide_map(player, "up", 4)) and on_grass then
         player.speed = old_speed
     else
@@ -315,7 +318,7 @@ function player_draw()
     if not player.fin then
         print(str, cam_x + 64 - #str*2 , cam_y + 8, 7)
     else
-        print(str4, cam_x + 64 - #str3*2, cam_y + 8, 7)
+        print(str4, cam_x + 64 - #str4*2, cam_y + 8, 7)
         print(restart, cam_x + 64 - #restart*2, cam_y + 114, 12)
         print(next_level, cam_x + 64 - #next_level*2, cam_y + 122, 12)
     end
