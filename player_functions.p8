@@ -364,6 +364,16 @@ function reset_save()
     dset(9, 2)--player.sp
 end
 
+function random(x, y, t, cnt, prime)
+    --  (prime(t + seed) + 
+    --  (xy mod prime)) mod cnt
+    --  cnt is the limit on the random number
+    prime = prime or 97
+    cnt = cnt or 100
+    xy=x*y
+    return (prime*((t*xy*prime)+t)+(xy%prime))%cnt
+end
+
 __gfx__
 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
