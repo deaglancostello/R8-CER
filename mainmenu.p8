@@ -20,8 +20,8 @@ function _init()
     draw_nums = false
     nums_spr = 64
     min_nums_spr = 64
-    max_nums_spr = 76
-    version = "alpha v-0.6.4"
+    max_nums_spr = 75
+    version = "alpha v-0.6.7"
 end
 
 function _update()

@@ -22,7 +22,7 @@ function player_init()
         start = 0,
         fin_time = 0,
         cp_cd = 0,
-        max_cpcd = 3,
+        max_cpcd = 2,
         checkpoints = 0,
         in_rev = false,
         on_grass = false,
@@ -45,7 +45,6 @@ function player_update()
     elseif player.checkpoints == max_checkpoints and not player.fin and on_fin then
         player.fin = true
         player.fin_time = time()-player.start
-        player.start = player.fin_time
     end
     if (collide_map(player, "down", 2) or collide_map(player, "right", 2) or collide_map(player, "left", 2) or collide_map(player, "up", 2)) and player.start > 0 and time()-player.cp_cd > player.max_cpcd then
         player.checkpoints += 1
@@ -302,10 +301,24 @@ function cam_update()
 end
 
 function player_draw()
-    local str = "time: "..flr(time()-player.start)
+    local minutes = flr(flr(time()-player.start)/60)
+    if player.fin then
+        minutes = dget(63)
+    else
+        dset(63, minutes)
+    end
+    local seconds = (flr(time()-player.start))%60
+    if seconds < 10 then
+        seconds = "0"..seconds
+    end
+    local fin_seconds = player.fin_time%60
+    if fin_seconds < 10 then
+        fin_seconds = "0"..fin_seconds
+    end
+    local str = "time: "..minutes.."."..seconds
     local str2 = "cp/total: "..player.checkpoints.."/"..max_checkpoints
     local str3 = "speed: "..flr(player.speed*100)..""
-    local str4 = "time: "..player.fin_time
+    local str4 = "time: "..minutes.."."..fin_seconds
     local restart = "press 🅾️/z to restart"
     local next_level = "press ❎/x to go to next track"
     local in_air = "airborne!"
