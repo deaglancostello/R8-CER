@@ -2,7 +2,7 @@ pico-8 cartridge // http://www.pico-8.com
 version 42
 __lua__
 
---export -i 6 r8-cer.bin mainmenu.p8 player_functions.p8 race1.p8 race2.p8 race3.p8 race4.p8 race5.p8 race6.p8 race7.p8 race8.p8 race9.p8 race10.p8 race11.p8 race12.p8 race13.p8
+--export -i 6 r8-cer.bin mainmenu.p8 player_functions.p8 race1.p8 race2.p8 race3.p8 race4.p8 race5.p8 race6.p8 race7.p8 race8.p8 race9.p8 race10.p8 tutorial.p8
 
 function _init()
     #include player_functions.p8
@@ -20,8 +20,8 @@ function _init()
     draw_nums = false
     nums_spr = 64
     min_nums_spr = 64
-    max_nums_spr = 75
-    version = "alpha v-0.6.7"
+    max_nums_spr = 73
+    version = "demo v-0.6.8"
 end
 
 function _update()
@@ -47,7 +47,7 @@ function _draw()
 end
 
 function choose_button()
-    local levels = {"race1.p8","race2.p8","race3.p8", "race4.p8", "race5.p8", "race6.p8", "race7.p8", "race8.p8", "race9.p8", "race10.p8", "race11.p8", "race12.p8","race13.p8","mainmenu.p8"}
+    local levels = {"race1.p8","race2.p8","race3.p8", "race4.p8", "race5.p8", "race6.p8", "race7.p8", "race8.p8", "race9.p8", "race10.p8","mainmenu.p8"}
     local mouse_x = stat(32)
     local mouse_y = stat(33)
     if btn_map_x < 72 then
@@ -65,7 +65,11 @@ function choose_button()
                 if j == #levels then 
                     j = 1 
                 end
-                load(levels[j])
+                if dget(10) == 0 then
+                    load("tutorial.p8")
+                else
+                    load(levels[j])
+                end
             end
         elseif mouse_y > 56 and mouse_y < 72 and mouse_x > 53 and mouse_x < 75 then
             --races button
@@ -88,6 +92,7 @@ function choose_button()
         --the something else
         draw_nums = true
         if mouse_y > 80 and mouse_y < 96 and mouse_x > 53 and mouse_x < 75 then
+            --back button
             btn_map_x = 90
             btn_map_y = 0
             if stat(34) == 1 then
@@ -96,6 +101,7 @@ function choose_button()
                 last_click = time()
             end
         elseif mouse_y > 56 and mouse_y < 64 and mouse_x > 40 and mouse_x < 48 then
+            --left arrow button
             btn_map_x = 108
             btn_map_y = 18
             if stat(34) == 1 and nums_spr > min_nums_spr and time() - last_click > 0.1 then
@@ -104,6 +110,7 @@ function choose_button()
                 last_click = time()
             end
         elseif mouse_y > 56 and mouse_y < 64 and mouse_x > 80 and mouse_x < 88 then
+            --right arrow button
             btn_map_x = 108
             btn_map_y = 0
             if stat(34) == 1 and nums_spr < max_nums_spr and time() - last_click > 0.1 then
@@ -112,6 +119,7 @@ function choose_button()
                 sfx(1,3)
             end
         elseif mouse_y > 32 and mouse_y < 48 and mouse_x > 53 and mouse_x < 75 then
+            --play button
             btn_map_x = 90
             btn_map_y = 18
             if stat(34) == 1 then
