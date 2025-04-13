@@ -112,7 +112,7 @@ function player_update()
             player.slowing_down = false
             old_speed = player.speed
             if player.speed > 0 then
-                player.speed -= player.acc/10
+                player.speed -= 0.1
             else
                 player.in_rev = true
                 player.speed -= player.acc
@@ -121,7 +121,7 @@ function player_update()
         if not btn(⬇️) and not btn(⬆️) and player.speed > 0 then
             player.slowing_down = true
             player.speed = old_speed
-            old_speed -= 0.1
+            old_speed -= 0.05
         end
         
         player.da = mid(-player.max_da, player.da, player.max_da)
@@ -135,6 +135,18 @@ function player_update()
         end
 
         player_animate()
+        if player.angle_in_deg > 88 and player.angle_in_deg < 92 then
+            player.angle_in_deg = 90
+        end
+        if player.angle_in_deg > 178 and player.angle_in_deg < 182 then
+            player.angle_in_deg = 180
+        end
+        if player.angle_in_deg > 268 and player.angle_in_deg < 272 then
+            player.angle_in_deg  = 270
+        end
+        if (player.angle_in_deg > 358 and player.angle_in_deg <= 360) or (player.angle_in_deg >= 0 and player.angle_in_deg < 2) then
+            player.angle_in_deg = 0
+        end
 
         local p_angle = player.angle_in_deg/360
         if on_grass and not player.in_air then
@@ -359,6 +371,7 @@ function save()
     dset(7, old_speed)
     dset(8, player.start)
     dset(9, player.sp)
+    dset(11, player.checkpoints)
 end
 
 function load_save()
@@ -369,6 +382,7 @@ function load_save()
     old_speed = dget(7)
     player.start = dget(8)
     player.sp = dget(9)
+    player.checkpoints = dget(11)
 end
 
 function reset_save()
@@ -381,6 +395,7 @@ function reset_save()
     dset(8, 0)--player.start
     dset(9, 2)--player.sp
     dset(10, 0)--tutorial completed
+    dset(11, 0)--player.checkpoints
 end
 
 function random(x, y, t, cnt, prime)
