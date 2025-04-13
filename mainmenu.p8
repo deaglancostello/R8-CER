@@ -21,7 +21,7 @@ function _init()
     nums_spr = 64
     min_nums_spr = 64
     max_nums_spr = 73
-    version = "beta v-0.7.0"
+    version = "beta v-0.7.2"
 end
 
 function _update()
@@ -65,7 +65,7 @@ function choose_button()
                 if j == #levels then 
                     j = 1 
                 end
-                if dget(10) == 0 then
+                if dget(10) == 0 or dget(1) == 12 then
                     load("tutorial.p8")
                 else
                     load(levels[j])

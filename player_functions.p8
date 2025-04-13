@@ -45,7 +45,9 @@ function player_update()
     elseif player.checkpoints == max_checkpoints and not player.fin and on_fin then
         player.fin = true
         player.fin_time = time()-player.start
-        dset(12 + dget(1), player.fin_time)
+        if player.fin_time < dget(12 + dget(1)) or dget(12 + dget(1)) == 0 then
+            dset(12 + dget(1), player.fin_time)
+        end
     end
     if (collide_map(player, "down", 2) or collide_map(player, "right", 2) or collide_map(player, "left", 2) or collide_map(player, "up", 2)) and player.start > 0 and time()-player.cp_cd > player.max_cpcd then
         player.checkpoints += 1
