@@ -45,6 +45,7 @@ function player_update()
     elseif player.checkpoints == max_checkpoints and not player.fin and on_fin then
         player.fin = true
         player.fin_time = time()-player.start
+        dset(12, player.fin_time)
     end
     if (collide_map(player, "down", 2) or collide_map(player, "right", 2) or collide_map(player, "left", 2) or collide_map(player, "up", 2)) and player.start > 0 and time()-player.cp_cd > player.max_cpcd then
         player.checkpoints += 1
@@ -178,6 +179,7 @@ function player_update()
             for i = 1,dget(1) do
                 j = i
             end
+            dset(12, 0)
             load(levels[j])
         end
         if btn(❎) then
@@ -185,11 +187,11 @@ function player_update()
             for i = 1,dget(1)+1 do
                 j = i
             end
+            dset(12, 0)
             if dget(1) == 12 then
                 load("race1.p8")
             else
                 load(levels[j])
-        
             end
         end
     end
@@ -332,7 +334,17 @@ function player_draw()
     if fin_seconds < 10 then
         fin_seconds = "0"..fin_seconds
     end
-    local str = "time: "..minutes.."."..seconds
+    local str = "time: 0.00"
+    if dget(12) != 0 then
+        if dget(12)%60 < 10 then
+            str = "best: "..flr(dget(12)/60)..".0"..dget(12)%60
+        else
+            str = "best: "..flr(dget(12)/60).."."..dget(12)%60
+        end
+    end
+    if player.start != 0 then
+        str = "time: "..minutes.."."..seconds
+    end
     local str2 = "cp/total: "..player.checkpoints.."/"..max_checkpoints
     local str3 = "speed: "..flr(player.speed*100)..""
     local str4 = "time: "..minutes.."."..fin_seconds

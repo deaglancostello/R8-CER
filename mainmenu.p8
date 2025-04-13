@@ -21,7 +21,7 @@ function _init()
     nums_spr = 64
     min_nums_spr = 64
     max_nums_spr = 73
-    version = "BETA v-0.6.9"
+    version = "beta v-0.7.0"
 end
 
 function _update()
