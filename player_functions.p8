@@ -184,7 +184,7 @@ function player_update()
             dset(12, 0)
             load(levels[j])
         end
-        if btn(❎) then
+        if btn(❎) and (player.fin_time < time_to_beat or dget(12 + dget(1)) < time_to_beat) then
             local j = 1
             for i = 1,dget(1)+1 do
                 j = i
@@ -351,20 +351,34 @@ function player_draw()
     local str3 = "speed: "..flr(player.speed*100)..""
     local str4 = "time: "..minutes.."."..fin_seconds
     local restart = "press 🅾️/z to restart"
+    local beat_the_time = "beat the target time to advance"
     local next_level = "press ❎/x to go to next track"
     local in_air = "airborne!"
     local speed_up = "boost!"
+    local target_time = ""
+    if time_to_beat%60 < 10 then
+        target_time = "beat time: "..(flr(time_to_beat/60)%60)..".0"..time_to_beat%60
+    else
+        target_time = "beat time: "..(flr(time_to_beat/60)%60).."."..time_to_beat%60
+    end
     cls()
     map(0,0)
     camera(cam_x, cam_y)
     line(player.x+4, player.y+4, player.x + 4 + player.dx * 10, player.y + 4 + player.dy * 10, 1)
     spr(player.sp, player.x, player.y, 1, 1, player.flp_x, player.flp_y)
+    if player.start == 0 then
+        print(target_time, cam_x + 64 - #target_time*2, cam_y + 32, 7)
+    end
     if not player.fin then
         print(str, cam_x + 64 - #str*2 , cam_y + 8, 7)
     else
         print(str4, cam_x + 64 - #str4*2, cam_y + 8, 7)
         print(restart, cam_x + 64 - #restart*2, cam_y + 114, 12)
-        print(next_level, cam_x + 64 - #next_level*2, cam_y + 122, 12)
+        if player.fin_time < time_to_beat or dget(12 + dget(1)) < time_to_beat then
+            print(next_level, cam_x + 64 - #next_level*2, cam_y + 122, 12)
+        else
+            print(beat_the_time, cam_x + 64 - #beat_the_time*2, cam_y + 122, 12)
+        end
     end
     if player.speed > 3 then
         print(speed_up, cam_x + 64 - #speed_up*2, cam_y + 40, 7)

@@ -18,7 +18,7 @@ function _init()
         load_save()
     end
     max_checkpoints = 7
-    time_to_beat = 30
+    time_to_beat = 40
 end
 
 function _update()
