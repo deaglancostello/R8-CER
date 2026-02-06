@@ -225,7 +225,10 @@ function player_update()
                 --set j to the level we are on, this could be maybe phased out by
                 --doing local j = dget(1)
             end
-            dset(12 + j, 0)
+            if player.fin and dget(12) < player.fin_time then
+                --set the memory value for best time
+                dset(12 + j, player.fin_time)
+            end
             load(levels[j])
         end
         if btn(❎) and (player.fin_time < time_to_beat or dget(12 + dget(1)) < time_to_beat) then
@@ -233,7 +236,10 @@ function player_update()
             for i = 1,dget(1)+1 do
                 j = i
             end
-            dset(12+j, 0)
+            if player.fin and dget(12+j) < player.fi_time then
+                --same as above
+                dset(12+j, player.fin_time)
+            end
             if dget(1) == 12 then
                 load("race1.p8")
             else
