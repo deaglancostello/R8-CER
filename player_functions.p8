@@ -216,6 +216,7 @@ function player_update()
         --update the camera, which just sticks to the player
         cam_update()
     else
+        --have to optimize and fix bugs here, should be easier in unity, hopefully
         --dget(12+x, y) is the time for the current level, x starting at 0, y being the time
         if btn(🅾️) then
             --grab the level we're on
@@ -263,6 +264,7 @@ function collide_map(object, aim, flag)
     --obj = table needs x,y,w,h
     --aim = left,right,up,down
 
+    --luckily unity handles this for me, all i have to do is write the code for it to slow down the player, boost, air, etc
     local obj = object
     local x = obj.x
     local y = obj.y
@@ -313,6 +315,7 @@ function collide_map(object, aim, flag)
 end
 
 function player_animate()
+    --changes the player's sprite based on angle, again unity can handle this, through rotation, just have to get the speed and turning working first
     if player.angle_in_deg > 22.5 and player.angle_in_deg < 67.5 then
         player.sp = 3
         player.flp_y = false
@@ -494,6 +497,7 @@ function reset_save()
 end
 
 function random(x, y, t, cnt, prime)
+    --never implemented, was gonna do a random level selection
     --  (prime(t + seed) + 
     --  (xy mod prime)) mod cnt
     --  cnt is the limit on the random number
