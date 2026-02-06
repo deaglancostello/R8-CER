@@ -38,18 +38,25 @@ function player_init()
 end
 
 function player_update()
+    --saving the fin bool for later, as its quite long
     local on_fin = (collide_map(player, "down", 1) or collide_map(player, "right", 1) or collide_map(player, "left", 1) or collide_map(player, "up", 1))
+    --saving the on grass bool for later, its also long
     local on_grass = collide_map(player, "down", 0) or collide_map(player, "right", 0) or collide_map(player, "left", 0) or collide_map(player, "up", 0)
     if on_fin and player.start == 0 and not player.fin then
+        --checks if the player is at the start and updates the start (until they leave the start) to the current time
         player.start = time()
     elseif player.checkpoints == max_checkpoints and not player.fin and on_fin then
+        --checks if the player has collected all checkpoints and is on the finish
         player.fin = true
         player.fin_time = time()-player.start
         if player.fin_time < dget(12 + dget(1)) or dget(12 + dget(1)) == 0 then
+            --set the memory value to the players best time to 12+ (current level) as the finish time, stored exactly
             dset(12 + dget(1), player.fin_time)
         end
     end
     if (collide_map(player, "down", 2) or collide_map(player, "right", 2) or collide_map(player, "left", 2) or collide_map(player, "up", 2)) and player.start > 0 and time()-player.cp_cd > player.max_cpcd then
+        --checks if the player is on a checkpoint, and hasn't touched a checkpoint in a while
+        --prevents the player from going over the same checkpoint multiple times
         player.checkpoints += 1
         player.cp_cd = time()
     end
@@ -60,38 +67,47 @@ function player_update()
         player.max_speed = 10
     end
     if (collide_map(player, "down", 4) or collide_map(player, "right", 4) or collide_map(player, "left", 4) or collide_map(player, "up", 4)) then
+        --ramp
         player.in_air = true
         old_speed = player.speed
         if player.da != 0 then
             player.da = 0
         end
     elseif (collide_map(player, "down", 4) or collide_map(player, "right", 4) or collide_map(player, "left", 4) or collide_map(player, "up", 4)) and on_grass then
+        --if the player hits grass while in air, then set their speed lower than normal, as grass can't affect you in air, you also can't turn in air
         player.speed = old_speed
     else
         player.in_air = false
     end
 
     if player.checkpoints > max_checkpoints then
+        --prevents cps going over total
         player.checkpoints = max_checkpoints
     end
     --⬇️ ⬆️ ⬅️ ➡️
     if not player.fin then
         if player.speed < 3 then
+            --applies friction when not sped up by booster
             player.speed *= friction
         else
+            --otherwise it linearly applies friction when boosting, as friction would slow you down too fast
             player.speed -= 1
         end
         if player.speed < 0.1 then
+            --stops the player from keeping less than 0.1 speed, as they would never stop otherwise
             player.speed = 0
         end
         if (player.speed > 0 or player.speed < 0) and not player.in_air then
+            --movement code, disable in air
             if btn(⬅️) then
+                --rotates left
                 friction = 0.5
                 if player.da > 0 then
                     player.da = 0
                 end
                 player.da -= player.da_acc/2
             end
+            --right
             if btn(➡️) then
                 friction = 0.5
                 if player.da < 0 then
@@ -101,33 +117,42 @@ function player_update()
             end
         end
         if not btn(➡️) and not btn(⬅️) then
+            --checks whether each button is being pressed
+            --if not, set the friction higher, as friction when turning is less
             player.da = 0
             friction = 0.8
             player.max_da = 10
         end
         if btn(⬆️) then
+            --speeds up the player
             player.slowing_down = false
             player.in_rev = false
             player.speed += player.acc
             old_speed = player.speed
         end
         if btn(⬇️) then
+            --slows down the player
             player.slowing_down = false
             old_speed = player.speed
             if player.speed > 0 then
                 player.speed -= 0.1
             else
+                --makes the player go in reverse
                 player.in_rev = true
                 player.speed -= player.acc
             end
         end
         if not btn(⬇️) and not btn(⬆️) and player.speed > 0 then
+            --if the player is not holding any buttons, slow them down
             player.slowing_down = true
             player.speed = old_speed
             old_speed -= 0.05
         end
         
+        --circle calculations, oh lord
+        --caps the rate at which the player can turn at after doing the calculations for how they turn
         player.da = mid(-player.max_da, player.da, player.max_da)
+        --changes the players direction based on the speed at which they are turning
         player.angle_in_deg += player.da
 
         if player.angle_in_deg > 360 then
@@ -138,6 +163,8 @@ function player_update()
         end
 
         player_animate()
+
+        --all the below statements snap the player to a degree when close enough
         if player.angle_in_deg > 88 and player.angle_in_deg < 92 then
             player.angle_in_deg = 90
         end
@@ -151,37 +178,54 @@ function player_update()
             player.angle_in_deg = 0
         end
 
+        --divide angle by 360 to ensure that its in radians, hence the code above to make sure its under 360
         local p_angle = player.angle_in_deg/360
+
+        --if the player is on grass and in air, then make sure to update that
         if on_grass and not player.in_air then
             player.on_grass = true
         else
+            --otherwise ignore
             player.on_grass = false
         end
+
+        --limiting speed if not in reverse and not slowing down
         if not player.in_rev and not player.slowing_down then
             if not player.on_grass then
                 player.speed = mid(-player.max_speed, player.speed, player.max_speed)
             else
+                --apply a different type of friction on grass
                 player.speed = mid(-player.max_speed*g_friction, player.speed, player.max_speed*g_friction)
             end
         elseif not player.slowing_down then
+            --if in reverse, go slower
             if not player.on_grass then
+                --same as above
                 player.speed = mid(-player.max_speed/2, player.speed, player.max_speed/2)
             else
                 player.speed = mid((-player.max_speed/2)*g_friction, player.speed, (player.max_speed/2)*g_friction)
             end
         end
+
+        --this snippet changes the x and y pos based on the angle and speed
         player.dy = -sin(p_angle) * player.speed --calculates the change in x based on the speed and angle the player is at
         player.dx = cos(p_angle) * player.speed --calculates the change in y based on the speed and angle the player is at
+        --simply updates player pos, speed is limited already by player.max_da and min_da
         player.x += player.dx
         player.y += player.dy
+        --update the camera, which just sticks to the player
         cam_update()
     else
+        --dget(12+x, y) is the time for the current level, x starting at 0, y being the time
         if btn(🅾️) then
+            --grab the level we're on
             local j = 1
             for i = 1,dget(1) do
                 j = i
+                --set j to the level we are on, this could be maybe phased out by
+                --doing local j = dget(1)
             end
-            dset(12, 0)
+            dset(12 + j, 0)
             load(levels[j])
         end
         if btn(❎) and (player.fin_time < time_to_beat or dget(12 + dget(1)) < time_to_beat) then
@@ -189,7 +233,7 @@ function player_update()
             for i = 1,dget(1)+1 do
                 j = i
             end
-            dset(12, 0)
+            dset(12+j, 0)
             if dget(1) == 12 then
                 load("race1.p8")
             else
@@ -338,9 +382,12 @@ function player_draw()
     end
     local str = "time: 0.00"
     if dget(12 + dget(1)) != 0 then
+        --tests if the time saved in memory is not 0
         if dget(12 + dget(1))%60 < 10 then
+            --if it is, and less than a minute, then display the seconds
             str = "best: "..flr(dget(12 + dget(1))/60)..".0"..dget(12 + dget(1))%60
         else
+            --else display the minutes
             str = "best: "..flr(dget(12 + dget(1))/60).."."..dget(12 + dget(1))%60
         end
     end
@@ -357,35 +404,49 @@ function player_draw()
     local speed_up = "boost!"
     local target_time = ""
     if time_to_beat%60 < 10 then
+        --display the time in seconds
         target_time = "beat time: "..(flr(time_to_beat/60)%60)..".0"..time_to_beat%60
     else
+        --display the time in minutes + seconds
         target_time = "beat time: "..(flr(time_to_beat/60)%60).."."..time_to_beat%60
     end
+    --basic map drawing
     cls()
     map(0,0)
     camera(cam_x, cam_y)
+    --draws a line showing where the player is exactly pointing, as i cannot rotate in p8
     line(player.x+4, player.y+4, player.x + 4 + player.dx * 10, player.y + 4 + player.dy * 10, 1)
+    --draws the player sprite at the correct position and flips it based on the orientation its facing, based on the circle i calculated earlier
     spr(player.sp, player.x, player.y, 1, 1, player.flp_x, player.flp_y)
     if player.start == 0 then
+        --if the time is 0, the player hasn't started yet, display the target time to beat
         print(target_time, cam_x + 64 - #target_time*2, cam_y + 32, 7)
     end
     if not player.fin then
+        --horrible variable naming, but it displays the time if the player hasn't finished yet
         print(str, cam_x + 64 - #str*2 , cam_y + 8, 7)
     else
+        --if the player finished, then display the finish time, which is more exact than normal time
         print(str4, cam_x + 64 - #str4*2, cam_y + 8, 7)
+        --print the restart message
         print(restart, cam_x + 64 - #restart*2, cam_y + 114, 12)
         if player.fin_time < time_to_beat or dget(12 + dget(1)) < time_to_beat then
+            --if the player beat the time, print the next level message
             print(next_level, cam_x + 64 - #next_level*2, cam_y + 122, 12)
         else
+            --if not, tell them to beat it
             print(beat_the_time, cam_x + 64 - #beat_the_time*2, cam_y + 122, 12)
         end
     end
     if player.speed > 3 then
+        --displays the SPEED UP! message when boosting
         print(speed_up, cam_x + 64 - #speed_up*2, cam_y + 40, 7)
     end
     if player.in_air then
+        --displays the IN AIR! message when in air
         print(in_air, cam_x + 64 - #in_air*2, cam_y + 32, 7)
     end
+    --displays the cp and total, then the speed UI
     print(str2, cam_x + 64 - #str2*2, cam_y + 16, 6)
     print(str3, cam_x + 64 - #str3*2, cam_y + 24, 12)
 end

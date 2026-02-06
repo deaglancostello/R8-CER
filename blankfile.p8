@@ -3,6 +3,7 @@ version 42
 __lua__
 
 function _init()
+    --copy paste for each level
     #include player_functions.p8
     cartdata("r8cer_costello")
     menuitem(1, "save", function() save() end)
