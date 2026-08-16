@@ -16,7 +16,7 @@ function player_init()
         acc = 0.6,
         da = 0, --change in angle, how hard the car is turning
         max_da = 10,
-        da_acc = 0.6,
+        da_acc = 0.3,
         sp = 2,
         angle_in_deg = 180,
         start = 0,
@@ -37,9 +37,16 @@ function player_init()
     old_speed = 0
 end
 
+--making this an OOP project instead, to clean up code and make it a lot more readable when i transfer it to unity
 function player_update()
+    --this bool describes whether the player is on a ramp or not, the ramp flag in the editor is used for the ramps, and what the player flies over when in air
+    local on_ramp = collide_map(player, "down", 4) or collide_map(player, "right", 4) or collide_map(player, "left", 4) or collide_map(player, "up", 4)
+    --bool for whether a player is on a booster
+    local on_booster = collide_map(player, "down", 3) or collide_map(player, "right", 3) or collide_map(player, "left", 3) or collide_map(player, "up", 3)
+    --saving a bool for whether player is on cp, as it's long
+    local on_cp = collide_map(player, "down", 2) or collide_map(player, "right", 2) or collide_map(player, "left", 2) or collide_map(player, "up", 2)
     --saving the fin bool for later, as its quite long
-    local on_fin = (collide_map(player, "down", 1) or collide_map(player, "right", 1) or collide_map(player, "left", 1) or collide_map(player, "up", 1))
+    local on_fin = collide_map(player, "down", 1) or collide_map(player, "right", 1) or collide_map(player, "left", 1) or collide_map(player, "up", 1)
     --saving the on grass bool for later, its also long
     local on_grass = collide_map(player, "down", 0) or collide_map(player, "right", 0) or collide_map(player, "left", 0) or collide_map(player, "up", 0)
     if on_fin and player.start == 0 and not player.fin then
@@ -49,31 +56,35 @@ function player_update()
         --checks if the player has collected all checkpoints and is on the finish
         player.fin = true
         player.fin_time = time()-player.start
+        --calculating the fin time here above this
         if player.fin_time < dget(12 + dget(1)) or dget(12 + dget(1)) == 0 then
-            --set the memory value to the players best time to 12+ (current level) as the finish time, stored exactly
+            --set the memory value at 12 + (whatever level player is on) as the finish time, stored exactly
+            --an example: for level 1
+            --dset(13, player.fin_time) would set the best time for level one in memory
             dset(12 + dget(1), player.fin_time)
         end
     end
-    if (collide_map(player, "down", 2) or collide_map(player, "right", 2) or collide_map(player, "left", 2) or collide_map(player, "up", 2)) and player.start > 0 and time()-player.cp_cd > player.max_cpcd then
+    if on_cp and player.start > 0 and time()-player.cp_cd > player.max_cpcd then
         --checks if the player is on a checkpoint, and hasn't touched a checkpoint in a while
-        --prevents the player from going over the same checkpoint multiple times
+        --does not prevent the player from going over the same checkpoint multiple times, which i will have to problem solve when porting to unity
         player.checkpoints += 1
         player.cp_cd = time()
     end
-    if (collide_map(player, "down", 3) or collide_map(player, "right", 3) or collide_map(player, "left", 3) or collide_map(player, "up", 3)) then
-        --booster
+    if on_booster then
+        --set's the players speed to almost max when hitting a booster, as setting it to max would cause some one off problems
         player.speed = player.max_speed-3
     else
         player.max_speed = 10
     end
-    if (collide_map(player, "down", 4) or collide_map(player, "right", 4) or collide_map(player, "left", 4) or collide_map(player, "up", 4)) then
-        --ramp
+    if on_ramp then
+        --checks to see if the player is on a ramp, if they are, set the in_air bool to true then whatever speed they were at, will stay the same. 
         player.in_air = true
         old_speed = player.speed
         if player.da != 0 then
             player.da = 0
+            --if the player is turning, stop it from happening, as you can't really turn in air 
         end
-    elseif (collide_map(player, "down", 4) or collide_map(player, "right", 4) or collide_map(player, "left", 4) or collide_map(player, "up", 4)) and on_grass then
+    elseif on_ramp and on_grass then
         --if the player hits grass while in air, then set their speed lower than normal, as grass can't affect you in air, you also can't turn in air
         player.speed = old_speed
     else
@@ -84,71 +95,13 @@ function player_update()
         --prevents cps going over total
         player.checkpoints = max_checkpoints
     end
+    
     --⬇️ ⬆️ ⬅️ ➡️
     if not player.fin then
-        if player.speed < 3 then
-            --applies friction when not sped up by booster
-            player.speed *= friction
-        else
-            --otherwise it linearly applies friction when boosting, as friction would slow you down too fast
-            player.speed -= 1
-        end
-        if player.speed < 0.1 then
-            --stops the player from keeping less than 0.1 speed, as they would never stop otherwise
-            player.speed = 0
-        end
-        if (player.speed > 0 or player.speed < 0) and not player.in_air then
-            --movement code, disable in air
-            if btn(⬅️) then
-                --rotates left
-                friction = 0.5
-                if player.da > 0 then
-                    player.da = 0
-                end
-                player.da -= player.da_acc/2
-            end
-            --right
-            if btn(➡️) then
-                friction = 0.5
-                if player.da < 0 then
-                    player.da = 0
-                end
-                player.da += player.da_acc/2
-            end
-        end
-        if not btn(➡️) and not btn(⬅️) then
-            --checks whether each button is being pressed
-            --if not, set the friction higher, as friction when turning is less
-            player.da = 0
-            friction = 0.8
-            player.max_da = 10
-        end
-        if btn(⬆️) then
-            --speeds up the player
-            player.slowing_down = false
-            player.in_rev = false
-            player.speed += player.acc
-            old_speed = player.speed
-        end
-        if btn(⬇️) then
-            --slows down the player
-            player.slowing_down = false
-            old_speed = player.speed
-            if player.speed > 0 then
-                player.speed -= 0.1
-            else
-                --makes the player go in reverse
-                player.in_rev = true
-                player.speed -= player.acc
-            end
-        end
-        if not btn(⬇️) and not btn(⬆️) and player.speed > 0 then
-            --if the player is not holding any buttons, slow them down
-            player.slowing_down = true
-            player.speed = old_speed
-            old_speed -= 0.05
-        end
         
+        update_speed_direction()
+        --this function will change the direction of the player, based on input, and also apply forces 
+
         --circle calculations, oh lord
         --caps the rate at which the player can turn at after doing the calculations for how they turn
         player.da = mid(-player.max_da, player.da, player.max_da)
@@ -247,6 +200,79 @@ function player_update()
                 load(levels[j])
             end
         end
+    end
+end
+
+function update_speed_direction()
+    if player.speed < 3 then
+        --applies friction when not sped up by booster
+        player.speed *= friction
+    else
+        --otherwise it linearly applies friction when boosting, as friction would slow you down too fast
+        player.speed -= 1
+    end
+    if player.speed < 0.1 then
+        --stops the player from keeping less than 0.1 speed, as they would never stop otherwise
+        player.speed = 0
+    end
+    if (player.speed > 0 or player.speed < 0) and not player.in_air then
+        --movement code, disabled in air
+        if btn(⬅️) then
+            --rotates player left
+            friction = 0.5
+            --set the friction to a lower value when turning, to be able to turn faster and it feels better too
+            if player.da > 0 then
+                player.da = 0
+                --if the player was turning right, then stop that, and set the dA back to 0, to start turning left.
+            end
+            player.da -= player.da_acc
+            --apply forces to the character in the 
+        end
+        --right
+        if btn(➡️) then
+            friction = 0.5
+            --same thing as the other turning direction, lower friction feels better
+            if player.da < 0 then
+                player.da = 0
+                --same thing as above here, set dA back to 0 if player was turning left
+            end
+            player.da += player.da_acc
+            --apply forces
+        end
+    end
+    if not btn(➡️) and not btn(⬅️) then
+        --checks whether each button is being pressed
+        --if not, set the friction higher, as friction when turning is less
+        player.da = 0
+        friction = 0.8
+        player.max_da = 10
+    end
+    if btn(⬆️) then
+        --speeds up the player
+        --setting some bools here to make sure nothing is messed up in the logic
+        player.slowing_down = false
+        player.in_rev = false
+        player.speed += player.acc
+        old_speed = player.speed
+        --this keeps track of the player speed in case they stop hitting buttons, old_speed will slow them down
+    end
+    if btn(⬇️) then
+        --slows down the player
+        player.slowing_down = false
+        old_speed = player.speed
+        if player.speed > 0 then
+            player.speed -= 0.1
+        else
+            --makes the player go in reverse
+            player.in_rev = true
+            player.speed -= player.acc
+        end
+    end
+    if not btn(⬇️) and not btn(⬆️) and player.speed > 0 then
+        --if the player is not holding any buttons, slow them down
+        player.slowing_down = true
+        player.speed = old_speed
+        old_speed -= 0.05
     end
 end
 

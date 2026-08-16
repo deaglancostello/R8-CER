@@ -6,11 +6,11 @@ __lua__
 
 function _init()
     #include player_functions.p8
-    poke(0x5F2D, 1)
+    poke(0x5F2D, 1)--enables me to use the mouse coords in the game
     cartdata("r8cer_costello")
-    --play is 54, 32 to 75, 40
-    --races is 53, 56 to 75, 72
-    --quit is 53, 80 to 75, 96
+    --play is 54, 32 to 75, 40 (coordinates)
+    --races is 53, 56 to 75, 72 (coordinates)
+    --quit is 53, 80 to 75, 96 (coordinates)
     btn_map_x = 0
     map_x = 0
     player_init()
@@ -21,7 +21,7 @@ function _init()
     nums_spr = 64
     min_nums_spr = 64
     max_nums_spr = 73
-    version = "stable v-0.7.3"
+    version = "stable v-0.7.5"
 end
 
 function _update()
@@ -31,43 +31,69 @@ end
 function _draw()
     cls()
     if map_x > 35 then
+        --this will set the background back to it's starting point if it's about to hit the end of the map
         map_x = 1
     else
+        --this scrolls the background on the main menu, gives it a nice feeling
         map_x += 0.2
     end
-    map(map_x, 18, 0, 0)
+    map(map_x, 18, 0, 0)--draw the map at the x value calculated above, y coordinate is constant
     spr(2, 16, 60, 1, 1, true)
-    pal(2, 130, 1)
-    map(btn_map_x, btn_map_y, 0, 0)
+    --draw the 2nd sprite in the sprite map, which is the car, rotated the wrong way LOL
+    --draws it at a constant x and y, as no one is controlling the car in this menu, the second two numbers are it's width and height, which are both one
+    --the last value flips the car the right way around
+    pal(2, 130, 1) --changes the background to be a slightly darker color than normal, as the color im using for the background is very bright
+    map(btn_map_x, btn_map_y, 0, 0)--this draws the specific version of which button you are hovering over
+    --i couldn't find a better way to do this then to manually draw out each variation of all 3 buttons with the darker sprite being selected 3 times, making the total
+    --variations 4, one for a clean menu, where you are not hovering over anything, and the 3 for the different buttons
+    --PICO-8 also does accept multiple map calls, when you call map again, it will draw over whatever the last map call drew, hence why it's here
     if draw_nums then
+        --if we are on the "race selection" screen, then draw whatever number was selected last to the screen
         spr(nums_spr, 60, 56)
     end
-    spr(48, stat(32)-1, stat(33)-1)
-    print(version, 64 - #version*2, 122, 12)
+    spr(48, stat(32)-1, stat(33)-1)--draws the mouse cursor to screen, as when in the game, you don't have one, the native mouse of your system disapears
+    print(version, 64 - #version*2, 122, 12)--draw whatever version we are on to the screen as well
 end
 
 function choose_button()
+    --this function does a lot, i'm going to split it up into some smaller functions, if i haven't already
+    --this function checks where the mouse is, then it will, first, change the map tiles we are on.
     local levels = {"race1.p8","race2.p8","race3.p8", "race4.p8", "race5.p8", "race6.p8", "race7.p8", "race8.p8", "race9.p8", "race10.p8","mainmenu.p8"}
     local mouse_x = stat(32)
     local mouse_y = stat(33)
     if btn_map_x < 72 then
+        --this checks whether or not we've exceeded the normal threshold for the screen drawing, if we have
+        --then we go down below, but for now, we are still in the main menu here.
         draw_nums = false
         --check if we are in the select menu or not, if we are do something else
         if mouse_y > 32 and mouse_y < 48 and mouse_x > 53 and mouse_x < 75 then
             --play button
+            --the address stored in memory value 1 is the player's level, for context here, the value at 12+dget(1) is the player's best time at that specific level
             btn_map_x = 18
+            --change the map to show a different play button
             if stat(34) == 1 then
-                sfx(1,3)
+                --checks if the stat enabled by turning on the devkit for the mouse buttons is the left button or not
+                --the bitfield for these goes as follows
+                --0x1 is the left button
+                --0x2 is the right button
+                --0x3 is the middle mouse button
+                sfx(1,3)--play a sound
                 local j = 1
                 for i = 1,dget(1) do
+                    --get to the most recent level the player has played, this value is set either manually when the player saves
+                    --or automatically when the player goes into a new level
                     j = i
                 end
                 if j == #levels then 
+                    --if the player has beaten all levels, place them at the race1.p8
                     j = 1 
                 end
                 if dget(10) == 0 or dget(1) == 12 then
+                    --if the flags for whether the player has beaten the tutorial or whether the value for the level is somehow 12, which you shouldn't be able to get to
+                    --in normal use, but it is just a failsafe
                     load("tutorial.p8")
                 else
+                    --else just load whatever level the player has played on the most recently
                     load(levels[j])
                 end
             end
@@ -90,6 +116,9 @@ function choose_button()
         end
     else
         --the something else
+        --there is a small bug here currently
+        --if the value for whether the player has completed the tutorial or not is 0, then you can select all of the races, without ever having played them
+        --i will fix this.
         draw_nums = true
         if mouse_y > 80 and mouse_y < 96 and mouse_x > 53 and mouse_x < 75 then
             --back button
