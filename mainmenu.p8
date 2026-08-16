@@ -21,7 +21,7 @@ function _init()
     nums_spr = 64
     min_nums_spr = 64
     max_nums_spr = 73
-    version = "stable v-0.7.5"
+    version = "stable v-0.7.6"
 end
 
 function _update()
@@ -114,7 +114,7 @@ function choose_button()
         else
             btn_map_x = 0
         end
-    else
+    elseif not (dget(10) == 0 or dget(1) == 12) then
         --the something else
         --there is a small bug here currently
         --if the value for whether the player has completed the tutorial or not is 0, then you can select all of the races, without ever having played them
@@ -159,6 +159,10 @@ function choose_button()
             btn_map_x = 72
             btn_map_y = 0
         end
+    else
+        --if the player has not completed the tutorial, push them into it. i will be setting a value here later to kick the player back to the
+        --main menu once they complete it, only if they came from the select screen button somehow.
+        load("tutorial.p8")
     end
 end
 

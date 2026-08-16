@@ -95,7 +95,7 @@ function player_update()
         --prevents cps going over total
         player.checkpoints = max_checkpoints
     end
-    
+
     --⬇️ ⬆️ ⬅️ ➡️
     if not player.fin then
         
@@ -190,7 +190,7 @@ function player_update()
             for i = 1,dget(1)+1 do
                 j = i
             end
-            if player.fin and dget(12+j) < player.fi_time then
+            if player.fin and dget(12+j) < player.fin_time then
                 --same as above
                 dset(12+j, player.fin_time)
             end
