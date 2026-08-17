@@ -21,7 +21,7 @@ function _init()
     nums_spr = 64
     min_nums_spr = 64
     max_nums_spr = 73
-    version = "stable v-0.7.6"
+    version = "stable v-0.8.1"
 end
 
 function _update()
@@ -166,10 +166,14 @@ function choose_button()
             btn_map_x = 90
             btn_map_y = 18
             if stat(34) == 1 then
+                --if the player clicks the play button while on the select screen, then load the level that is stored in memory
+                --the exact value is (the currently visually selected level) - (the minimum sprite value of those numbers) + 1
+                --this gets the exact value of the race to load for the player, since minimum value is 64-64+1, which is 1, which will load level1.p8
                 sfx(1,3)
                 load(levels[nums_spr - min_nums_spr + 1])
             end
         else
+            --otherwise the player is hovering over any buttons, don't need to change the map here, go back to default
             btn_map_x = 72
             btn_map_y = 0
         end

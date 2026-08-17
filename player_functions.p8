@@ -105,7 +105,7 @@ function player_update()
         --circle calculations, oh lord
         --caps the rate at which the player can turn at after doing the calculations for how they turn
         player.da = mid(-player.max_da, player.da, player.max_da)
-        --changes the players direction based on the speed at which they are turning
+        --changes the players direction in memory based on the speed at which they are turning
         player.angle_in_deg += player.da
 
         if player.angle_in_deg > 360 then
@@ -163,12 +163,14 @@ function player_update()
         --this snippet changes the x and y pos based on the angle and speed
         player.dy = -sin(p_angle) * player.speed --calculates the change in x based on the speed and angle the player is at
         player.dx = cos(p_angle) * player.speed --calculates the change in y based on the speed and angle the player is at
-        --simply updates player pos, speed is limited already by player.max_da and min_da
+        --simply updates player pos, speed is limited already by player.max_da and min_da and player.max_speed and player.min_speed
+        --it's also why i do all the calculations above to determine speed and change in direction first, before updating the actualy speed of the player in memory
         player.x += player.dx
         player.y += player.dy
         --update the camera, which just sticks to the player
         cam_update()
     else
+        --we can only get to this statement if the player has finished the level
         --have to optimize and fix bugs here, should be easier in unity, hopefully
         --dget(12+x, y) is the time for the current level, x starting at 0, y being the time
         if btn(🅾️) then
