@@ -29,7 +29,7 @@ function _update()
 end
 
 function _draw()
-    cls()
+    cls()--clears the last frame from the screen
     if map_x > 35 then
         --this will set the background back to it's starting point if it's about to hit the end of the map
         map_x = 1
@@ -98,7 +98,7 @@ function choose_button()
                 end
             end
         elseif mouse_y > 56 and mouse_y < 72 and mouse_x > 53 and mouse_x < 75 then
-            --races button
+            --select button
             btn_map_x = 36
             if stat(34) == 1 then
                 sfx(1,3)
@@ -116,9 +116,16 @@ function choose_button()
         end
     elseif not (dget(10) == 0 or dget(1) == 12) then
         --the something else
-        --there is a small bug here currently
-        --if the value for whether the player has completed the tutorial or not is 0, then you can select all of the races, without ever having played them
-        --i will fix this.
+        --we can only get here if the above statement failed, which means we are somewhere btn_map_x >= 72
+        --which is the highest point in we can get to in the normal main menu, when we set the value for the select
+        --it goes to 72, which means on the next frame/tick, it will go into this function and the map will also be set visually to be
+        --the correct one too, so nothing weird can happen
+        --this function mainly just controls the select screen, it controls what part of the map >= 72 is shown at that frame, the only one
+        --to not use a value over 72 is the back button, which sends you back to the main menu
+        --like with the main menu hovering, this function will also change the color of the sprites by moving the camera physically to a different
+        --part of the map where each possibility is shown, the numbers are actually drawn above the map anyways, they are not part of it.
+        --i did specifically use all values over 72 to make sure the code couldn't hit any edge cases during use, like being on the select screen 
+        --while also being in the main menu screen, which would be odd
         draw_nums = true
         if mouse_y > 80 and mouse_y < 96 and mouse_x > 53 and mouse_x < 75 then
             --back button
@@ -129,20 +136,27 @@ function choose_button()
                 btn_map_x = 54
                 last_click = time()
             end
+        --the logic below also makes sure you can't select a race you haven't been to yet.
         elseif mouse_y > 56 and mouse_y < 64 and mouse_x > 40 and mouse_x < 48 then
             --left arrow button
             btn_map_x = 108
             btn_map_y = 18
             if stat(34) == 1 and nums_spr > min_nums_spr and time() - last_click > 0.1 then
+                --checks if we are clicking that button, if we are, play a sound, it also makes sure that you can't click the button
+                --if you try to go past the first value
+                --i don't check values for races here as it's not that important and since the player can't spam, going back won't let
+                --you get past a race you haven't finished yet, so i don't check it, saves memory and time
                 sfx(1,3)
                 nums_spr -= 1
-                last_click = time()
+                last_click = time()--this var stores the last time you hit an arrow button, to prevent you from spamming them, i placed a time seperation on it
             end
         elseif mouse_y > 56 and mouse_y < 64 and mouse_x > 80 and mouse_x < 88 then
             --right arrow button
             btn_map_x = 108
             btn_map_y = 0
-            if stat(34) == 1 and nums_spr < max_nums_spr and time() - last_click > 0.1 then
+            if stat(34) == 1 and nums_spr < max_nums_spr and time() - last_click > 0.1 and nums_spr < (dget(1) + 63) then
+                --similar to above, but makes sure you can't go above the last value of sprites for races and prevents you from spamming as well
+                --this is the only one that stops you from going to a race you haven't been to as well
                 nums_spr += 1
                 last_click = time()
                 sfx(1,3)
