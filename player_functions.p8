@@ -55,7 +55,7 @@ function player_update()
     elseif player.checkpoints == max_checkpoints and not player.fin and on_fin then
         --checks if the player has collected all checkpoints and is on the finish
         player.fin = true
-        player.fin_time = time()-player.start
+        player.fin_time = time() - player.start
         --calculating the fin time here above this
         if player.fin_time < dget(12 + dget(1)) or dget(12 + dget(1)) == 0 then
             --set the memory value at 12 + (whatever level player is on) as the finish time, stored exactly
@@ -64,8 +64,8 @@ function player_update()
             dset(12 + dget(1), player.fin_time)
         end
     end
-    if on_cp and player.start > 0 and time()-player.cp_cd > player.max_cpcd then
-        --checks if the player is on a checkpoint, and hasn't touched a checkpoint in a while
+    if on_cp and player.start > 0 and time() - player.cp_cd > player.max_cpcd then
+        --checks if the player is on a checkpoint, and hasn't touched a checkpoint in a while, but does discourage it heavily.
         --does not prevent the player from going over the same checkpoint multiple times, which i will have to problem solve when porting to unity
         player.checkpoints += 1
         player.cp_cd = time()
@@ -117,24 +117,26 @@ function player_update()
 
         player_animate()
 
+        local modifier = 2.5
+        --simple modifier to make the code a little easier to modify when i want to change the number required to actually start turning.
         --all the below statements snap the player to a degree when close enough
-        if player.angle_in_deg > 88 and player.angle_in_deg < 92 then
+        if player.angle_in_deg > 90 - modifier and player.angle_in_deg < 90 + modifier then
             player.angle_in_deg = 90
         end
-        if player.angle_in_deg > 178 and player.angle_in_deg < 182 then
+        if player.angle_in_deg > 180 - modifier and player.angle_in_deg < 180 + modifier then
             player.angle_in_deg = 180
         end
-        if player.angle_in_deg > 268 and player.angle_in_deg < 272 then
+        if player.angle_in_deg > 270 - modifier and player.angle_in_deg < 270 + modifier then
             player.angle_in_deg  = 270
         end
-        if (player.angle_in_deg > 358 and player.angle_in_deg <= 360) or (player.angle_in_deg >= 0 and player.angle_in_deg < 2) then
+        if (player.angle_in_deg > 360 - modifier and player.angle_in_deg <= 360) or (player.angle_in_deg >= 0 and player.angle_in_deg < 0 + modifier) then
             player.angle_in_deg = 0
         end
 
         --divide angle by 360 to ensure that its in radians, hence the code above to make sure its under 360
         local p_angle = player.angle_in_deg/360
 
-        --if the player is on grass and in air, then make sure to update that
+        --if the player is on grass and not in air, then make sure to update that
         if on_grass and not player.in_air then
             player.on_grass = true
         else
@@ -164,7 +166,7 @@ function player_update()
         player.dy = -sin(p_angle) * player.speed --calculates the change in x based on the speed and angle the player is at
         player.dx = cos(p_angle) * player.speed --calculates the change in y based on the speed and angle the player is at
         --simply updates player pos, speed is limited already by player.max_da and min_da and player.max_speed and player.min_speed
-        --it's also why i do all the calculations above to determine speed and change in direction first, before updating the actualy speed of the player in memory
+        --it's also why i do all the calculations above to determine speed and change in direction first, before updating the actual speed of the player in memory
         player.x += player.dx
         player.y += player.dy
         --update the camera, which just sticks to the player
@@ -174,24 +176,14 @@ function player_update()
         --have to optimize and fix bugs here, should be easier in unity, hopefully
         --dget(12+x, y) is the time for the current level, x starting at 0, y being the time
         if btn(🅾️) then
-            --grab the level we're on
-            local j = 1
-            for i = 1,dget(1) do
-                j = i
-                --set j to the level we are on, this could be maybe phased out by
-                --doing local j = dget(1)
-            end
             if player.fin and dget(12) < player.fin_time then
                 --set the memory value for best time
-                dset(12 + j, player.fin_time)
+                dset(12 + dget(1), player.fin_time)
             end
-            load(levels[j])
+            load(levels[dget(1)])
         end
         if btn(❎) and (player.fin_time < time_to_beat or dget(12 + dget(1)) < time_to_beat) then
-            local j = 1
-            for i = 1,dget(1)+1 do
-                j = i
-            end
+            local j = dget(1) + 1
             if player.fin and dget(12+j) < player.fin_time then
                 --same as above
                 dset(12+j, player.fin_time)
@@ -276,6 +268,17 @@ function update_speed_direction()
         player.speed = old_speed
         old_speed -= 0.05
     end
+end
+
+--[[i know we already save in the player_update() function, but this one is to specifically export a save file, 
+    using what are essentially nested arrays with some data in them, arranged (called tables in this version of Lua) 
+    in a specific order so i can read it back the same everytime. This function also makes it so the load_save() function
+    can read from it, and load the data if necessary. I would like this to run every frame, if possible, but that is a LOT of data,
+    at 30fps on a 30 second run, it's already 900 items, but the way I intend to do this is by removing the first item (or last, I am
+    unsure at this moment), instead of looping through the whole array, which would likely take a lot longer, this function is mostly
+    here to allow a ghost of the car to be seen though, but it will allow the player to export data to a save file, then load it.]]
+function create_save_file()
+    --right now the best way to do this seems to be the printh() function with a filename attached, although it's hard to tell.
 end
 
 function collide_map(object, aim, flag)

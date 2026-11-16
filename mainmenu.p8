@@ -2,7 +2,7 @@ pico-8 cartridge // http://www.pico-8.com
 version 42
 __lua__
 
---export -i 6 r8-cer.bin mainmenu.p8 player_functions.p8 race1.p8 race2.p8 race3.p8 race4.p8 race5.p8 race6.p8 race7.p8 race8.p8 race9.p8 race10.p8 tutorial.p8
+--export -i 20 -c 0 r8-cer.bin mainmenu.p8 player_functions.p8 race1.p8 race2.p8 race3.p8 race4.p8 race5.p8 race6.p8 race7.p8 race8.p8 race9.p8 race10.p8 tutorial.p8
 
 function _init()
     #include player_functions.p8
@@ -21,7 +21,7 @@ function _init()
     nums_spr = 64
     min_nums_spr = 64
     max_nums_spr = 73
-    version = "stable v-0.8.1"
+    version = "stable v-0.8.2"
 end
 
 function _update()
